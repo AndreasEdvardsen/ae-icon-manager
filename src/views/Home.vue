@@ -65,6 +65,16 @@
       :length="pageAmmount"
       v-model="pageNumber"
     ></v-pagination>
+    <v-snackbar
+      min-width="0px"
+      color="black"
+      rounded="pill"
+      :timeout="1000"
+      v-model="snackbar"
+    >
+      <v-icon icon="mdi-emoticon-cool"></v-icon>
+      Icon copied to clipboard!
+    </v-snackbar>
   </v-container>
 </template>
 
@@ -79,6 +89,7 @@ const color = ref("#FFFFFF");
 const iconSize = ref(25);
 const pageSize = 100;
 const pageNumber = ref(1);
+const snackbar = ref(false);
 
 //Loop trough all icons before rendering to add color
 allicons.forEach((i) => {
@@ -97,6 +108,7 @@ function copyToClipboard(icon) {
       `<svg width="${iconSize.value}px" height="${iconSize.value}px"`
     ); // Add new size to icon
   navigator.clipboard.writeText(text);
+  snackbar.value = true;
 }
 
 const pageAmmount = computed(() => {
