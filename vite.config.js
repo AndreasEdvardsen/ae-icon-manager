@@ -9,7 +9,7 @@ import { fileURLToPath, URL } from "node:url";
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  base: "/REPONAME/",
+  base: "/ae-icon-manager/",
   plugins: [
     vue({
       template: { transformAssetUrls },
