@@ -37,26 +37,34 @@
         v-model="iconSize"
       ></v-slider>
     </v-row>
-    <v-row class="ma-10">
-      <v-tooltip v-for="icon in icons" :text="icon.name">
-        <template v-slot:activator="{ props }">
-          <v-btn
-            variant="text"
-            size="x-large"
-            rounded="xl"
-            @click="copyToClipboard(icon)"
-            v-bind="props"
-          >
-            <img
-              class="svg"
-              v-bind:src="icon.imagePath"
-              v-bind:alt="icon.path"
-            />
-          </v-btn>
-        </template>
-      </v-tooltip>
+    <v-row>
+      <v-col v-for="icon in icons" cols="auto">
+        <v-tooltip :text="icon.name">
+          <template v-slot:activator="{ props }">
+            <v-btn
+              variant="text"
+              icon
+              size="large"
+              rounded="xl"
+              min-width="55px"
+              @click="copyToClipboard(icon)"
+              v-bind="props"
+            >
+              <img
+                class="svg"
+                v-bind:src="icon.imagePath"
+                v-bind:alt="icon.path"
+              />
+            </v-btn>
+          </template>
+        </v-tooltip>
+      </v-col>
     </v-row>
-    <v-pagination :length="pageAmmount" v-model="pageNumber"></v-pagination>
+    <v-pagination
+      class="mt-8"
+      :length="pageAmmount"
+      v-model="pageNumber"
+    ></v-pagination>
   </v-container>
 </template>
 
@@ -109,7 +117,7 @@ const icons = computed(() => {
 
 <style>
 .svg {
-  height: 35px;
+  height: 40px;
   width: auto;
 }
 </style>
