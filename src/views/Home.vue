@@ -72,6 +72,7 @@ const iconSize = ref(25);
 const pageSize = 100;
 const pageNumber = ref(1);
 
+//Loop trough all icons before rendering to add color
 allicons.forEach((i) => {
   var image = encodeURIComponent(
     i.image.replace("<path ", `<path style="fill:${color.value};" `)
@@ -82,11 +83,11 @@ allicons.forEach((i) => {
 function copyToClipboard(icon) {
   var text = icon.image
     .replace("<path ", `<path style="fill:${color.value};" `) // Add color
-    .replace('width="48" height="48" ', "") // Remove sixe from mdi icons
+    .replace('width="48" height="48" ', "") // Remove old size from icon
     .replace(
       "<svg",
       `<svg width="${iconSize.value}px" height="${iconSize.value}px"`
-    ); // Add size to icons
+    ); // Add new size to icon
   navigator.clipboard.writeText(text);
 }
 
