@@ -15,11 +15,7 @@
     <v-row class="pl-3 pr-1">
       <v-menu>
         <template v-slot:activator="{ props }">
-          <v-btn
-            class="mr-8"
-            v-bind="props"
-            prepend-icon="mdi-palette"
-            :color="color"
+          <v-btn v-bind="props" prepend-icon="mdi-palette" :color="color"
             >Color</v-btn
           >
         </template>
@@ -29,16 +25,30 @@
           show-swatches
         ></v-color-picker>
       </v-menu>
+      <v-radio-group
+        inline
+        v-model="selectedPrefix"
+        class="flex-shrink-1 ml-md-2 ml-xs-0 mr-4"
+        style="flex: unset"
+      >
+        <v-radio
+          v-for="prefix in prefixes"
+          :label="prefix"
+          :value="prefix"
+        ></v-radio>
+      </v-radio-group>
       <v-slider
+        min-width="100px"
         :min="10"
         :max="100"
         :step="1"
         thumb-label="always"
         v-model="iconSize"
+        class="flex-grow-1"
       ></v-slider>
     </v-row>
-    <v-row>
-      <v-col v-for="icon in icons" cols="auto">
+    <v-row justify="center">
+      <v-col v-if="!loading" v-for="icon in icons" cols="auto">
         <v-tooltip :text="icon.name">
           <template v-slot:activator="{ props }">
             <v-btn
@@ -58,6 +68,12 @@
             </v-btn>
           </template>
         </v-tooltip>
+      </v-col>
+      <v-col v-if="loading && !serverDown" class="d-flex justify-center">
+        <v-progress-circular indeterminate></v-progress-circular>
+      </v-col>
+      <v-col v-if="serverDown">
+        <v-alert icon="mdi-alert"> Server is down! </v-alert>
       </v-col>
     </v-row>
     <v-pagination
@@ -79,9 +95,8 @@
 </template>
 
 <script setup>
-import { computed, getCurrentInstance } from "vue";
+import { computed, getCurrentInstance, reactive, watch } from "vue";
 import { ref } from "vue";
-import { reactive } from "vue";
 import axios from "axios";
 
 const searchString = ref("");
@@ -92,18 +107,17 @@ const pageSize = 100;
 const pageNumber = ref(1);
 const pageAmmount = ref(0);
 const snackbar = ref(false);
+const prefixes = ref(["mdi"]);
+const selectedPrefix = ref("mdi");
+const loading = ref(true);
+const serverDown = ref(false);
 
-function copyToClipboard(icon) {
-  var text = icon.image
-    .replace("<path ", `<path style="fill:${color.value};" `) // Add color
-    .replace('width="48" height="48" ', "") // Remove old size from icon
-    .replace(
-      "<svg",
-      `<svg width="${iconSize.value}px" height="${iconSize.value}px"`
-    ); // Add new size to icon
-  navigator.clipboard.writeText(text);
-  snackbar.value = true;
-}
+getDistinctIconPrefixes();
+getIcons(selectedPrefix);
+
+watch(selectedPrefix, () => {
+  getIcons(selectedPrefix);
+});
 
 const icons = computed(() => {
   var filteredIcons = filterIcons(allicons.value);
@@ -123,14 +137,40 @@ function filterIcons(icons) {
   return filteredIcons;
 }
 
-axios
-  .get("https://seashell-app-wwgas.ondigitalocean.app/icons")
-  .then(function (response) {
-    allicons.value = response.data;
-  })
-  .catch(function (error) {
-    console.log(error);
-  });
+function getDistinctIconPrefixes() {
+  axios
+    .get("http://localhost:4000/distinctIconPrefixes")
+    .then(function (response) {
+      prefixes.value = response.data;
+    });
+}
+
+function getIcons(prefix) {
+  loading.value = true;
+  axios
+    .get(`http://localhost:4000/icons?prefix=${prefix.value}`)
+    .then(function (response) {
+      allicons.value = response.data;
+      loading.value = false;
+    })
+    .catch(function (error) {
+      console.log(error);
+      loading.value = false;
+      serverDown.value = true;
+    });
+}
+
+function copyToClipboard(icon) {
+  var text = icon.image
+    .replace("<path ", `<path style="fill:${color.value};" `) // Add color
+    .replace('width="48" height="48" ', "") // Remove old size from icon
+    .replace(
+      "<svg",
+      `<svg width="${iconSize.value}px" height="${iconSize.value}px"`
+    ); // Add new size to icon
+  navigator.clipboard.writeText(text);
+  snackbar.value = true;
+}
 </script>
 
 <style>
