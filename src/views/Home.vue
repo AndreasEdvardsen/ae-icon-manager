@@ -139,7 +139,7 @@ function filterIcons(icons) {
 
 function getDistinctIconPrefixes() {
   axios
-    .get("http://localhost:4000/distinctIconPrefixes")
+    .get("https://seashell-app-wwgas.ondigitalocean.app/distinctIconPrefixes")
     .then(function (response) {
       prefixes.value = response.data;
     });
@@ -148,7 +148,9 @@ function getDistinctIconPrefixes() {
 function getIcons(prefix) {
   loading.value = true;
   axios
-    .get(`http://localhost:4000/icons?prefix=${prefix.value}`)
+    .get(
+      `https://seashell-app-wwgas.ondigitalocean.app/icons?prefix=${prefix.value}`
+    )
     .then(function (response) {
       allicons.value = response.data;
       loading.value = false;
