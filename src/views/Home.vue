@@ -80,24 +80,18 @@
 
 <script setup>
 import { computed, getCurrentInstance } from "vue";
-import json from "../assets/library-mdi.json";
 import { ref } from "vue";
+import { reactive } from "vue";
+import axios from "axios";
 
 const searchString = ref("");
-const allicons = json;
+var allicons = ref([]);
 const color = ref("#FFFFFF");
 const iconSize = ref(25);
 const pageSize = 100;
 const pageNumber = ref(1);
+const pageAmmount = ref(0);
 const snackbar = ref(false);
-
-//Loop trough all icons before rendering to add color
-allicons.forEach((i) => {
-  var image = encodeURIComponent(
-    i.image.replace("<path ", `<path style="fill:${color.value};" `)
-  );
-  i.imagePath = `data:image/svg+xml;utf8,${image}`;
-});
 
 function copyToClipboard(icon) {
   var text = icon.image
@@ -111,20 +105,32 @@ function copyToClipboard(icon) {
   snackbar.value = true;
 }
 
-const pageAmmount = computed(() => {
-  return Math.ceil(allicons.length / pageSize);
-});
-
 const icons = computed(() => {
-  let i = allicons.filter((icon) => {
-    if (icon.path.includes(searchString.value)) return true;
-    return false;
-  });
-  return i.slice(
+  var filteredIcons = filterIcons(allicons.value);
+  pageAmmount.value = Math.ceil(filteredIcons.length / pageSize);
+
+  return filteredIcons.slice(
     (pageNumber.value - 1) * pageSize,
     pageNumber.value * pageSize
   );
 });
+
+function filterIcons(icons) {
+  var filteredIcons = icons.filter((icon) => {
+    if (icon.path.includes(searchString.value)) return true;
+    return false;
+  });
+  return filteredIcons;
+}
+
+axios
+  .get("https://seashell-app-wwgas.ondigitalocean.app/icons")
+  .then(function (response) {
+    allicons.value = response.data;
+  })
+  .catch(function (error) {
+    console.log(error);
+  });
 </script>
 
 <style>
