@@ -121,6 +121,7 @@ watch(selectedPrefix, () => {
 
 const icons = computed(() => {
   var filteredIcons = filterIcons(allicons.value);
+  pageNumber.value = 1;
   pageAmmount.value = Math.ceil(filteredIcons.length / pageSize);
 
   return filteredIcons.slice(
