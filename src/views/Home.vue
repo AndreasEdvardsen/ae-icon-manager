@@ -60,11 +60,11 @@
               @click="copyToClipboard(icon)"
               v-bind="props"
             >
-              <img
+              <span
                 class="svg"
-                v-bind:src="icon.imagePath"
+                v-html="icon.image"
                 v-bind:alt="icon.path"
-              />
+              ></span>
             </v-btn>
           </template>
         </v-tooltip>
@@ -120,6 +120,7 @@ watch(selectedPrefix, () => {
 });
 
 const icons = computed(() => {
+  if (allicons.value.length == 0) return [];
   var filteredIcons = filterIcons(allicons.value);
   pageAmmount.value = Math.ceil(filteredIcons.length / pageSize);
 
@@ -127,10 +128,19 @@ const icons = computed(() => {
     pageNumber.value = 1;
   }
 
-  return filteredIcons.slice(
+  var iconsOnPage = filteredIcons.slice(
     (pageNumber.value - 1) * pageSize,
     pageNumber.value * pageSize
   );
+  //Set icon color
+  iconsOnPage.forEach((icon) => {
+    if (icon.isOutline) {
+      icon.image = updateSVGAttribute(icon.image, "stroke", `${color.value}`);
+    } else {
+      icon.image = updateSVGAttribute(icon.image, "fill", `${color.value}`);
+    }
+  });
+  return iconsOnPage;
 });
 
 function filterIcons(icons) {
@@ -143,7 +153,7 @@ function filterIcons(icons) {
 
 function getDistinctIconPrefixes() {
   axios
-    .get("https://seashell-app-wwgas.ondigitalocean.app/distinctIconPrefixes")
+    .get("http://localhost:4000/distinctIconPrefixes")
     .then(function (response) {
       prefixes.value = response.data;
     });
@@ -152,9 +162,7 @@ function getDistinctIconPrefixes() {
 function getIcons(prefix) {
   loading.value = true;
   axios
-    .get(
-      `https://seashell-app-wwgas.ondigitalocean.app/icons?prefix=${prefix.value}`
-    )
+    .get(`http://localhost:4000/icons?prefix=${prefix.value}`)
     .then(function (response) {
       allicons.value = response.data;
       loading.value = false;
@@ -167,20 +175,44 @@ function getIcons(prefix) {
 }
 
 function copyToClipboard(icon) {
-  var text = icon.image
-    .replace("<path ", `<path style="fill:${color.value};" `) // Add color
-    .replace('width="48" height="48" ', "") // Remove old size from icon
-    .replace(
-      "<svg",
-      `<svg width="${iconSize.value}px" height="${iconSize.value}px"`
-    ); // Add new size to icon
+  var text = icon.image;
+  if (icon.isOutline) {
+    text = updateSVGAttribute(text, "stroke", `${color.value}`);
+  } else {
+    text = updateSVGAttribute(text, "fill", `${color.value}`);
+  }
+  text = updateSVGAttribute(text, "width", `${iconSize.value}`);
+  text = updateSVGAttribute(text, "height", `${iconSize.value}`);
   navigator.clipboard.writeText(text);
   snackbar.value = true;
+}
+
+function updateSVGAttribute(svgString, svgAttribute, value) {
+  // Parse the SVG string into a DOM object
+  const parser = new DOMParser();
+  const serializer = new XMLSerializer();
+  const doc = parser.parseFromString(svgString, "image/svg+xml");
+  const svgElement = doc.querySelector("svg");
+  const svgElementChildren = doc.querySelectorAll(`[${svgAttribute}]`);
+
+  // If Children with the attribute already exist, update them, otherwise add the attribute to the parent
+  if (svgElementChildren.length > 0) {
+    svgElementChildren.forEach((element) => {
+      element.setAttribute(svgAttribute, value);
+    });
+  } else {
+    svgElement.setAttribute(svgAttribute, value);
+  }
+
+  // Serialize the updated DOM object back into a string
+  const updatedSVGString = serializer.serializeToString(svgElement);
+
+  return updatedSVGString;
 }
 </script>
 
 <style>
-.svg {
+.svg svg {
   height: 40px;
   width: auto;
 }
