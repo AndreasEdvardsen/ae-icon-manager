@@ -14,6 +14,7 @@ RUN npm install
 
 # copy project files and folders to the current working directory (i.e. 'app' folder)
 COPY . .
+ARG VITE_API_URI=${VITE_API_URI}
 ENV VITE_API_URI=${VITE_API_URI}
 RUN echo $VITE_API_URI
 # build app for production with minification
