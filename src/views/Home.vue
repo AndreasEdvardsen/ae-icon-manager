@@ -162,7 +162,7 @@ function getDistinctIconPrefixes() {
 function getIcons(prefix) {
   loading.value = true;
   axios
-    .get(process.env.API_URI + `/icons?prefix=${prefix.value}`)
+    .get(import.meta.env.VITE_API_URI + `/icons?prefix=${prefix.value}`)
     .then(function (response) {
       allicons.value = response.data;
       loading.value = false;
