@@ -153,7 +153,7 @@ function filterIcons(icons) {
 
 function getDistinctIconPrefixes() {
   axios
-    .get("http://icon-manager-api.aehm.cloud/distinctIconPrefixes")
+    .get("https://icon-manager-api.aehm.cloud/distinctIconPrefixes")
     .then(function (response) {
       prefixes.value = response.data;
     });
@@ -162,7 +162,7 @@ function getDistinctIconPrefixes() {
 function getIcons(prefix) {
   loading.value = true;
   axios
-    .get(`http://icon-manager-api.aehm.cloud/icons?prefix=${prefix.value}`)
+    .get(`https://icon-manager-api.aehm.cloud/icons?prefix=${prefix.value}`)
     .then(function (response) {
       allicons.value = response.data;
       loading.value = false;
